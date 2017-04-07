@@ -1,0 +1,164 @@
+
+
+
+============================== ORDBMS ============================
+
+
+----> creating an object: 
+create or replace type emp_address as object
+(street varchar2(20), city varchar2(20), country varchar2(20));
+
+---------
+
+create table person(pid number, pname varchar2(20), address emp_address);
+
+----------
+
+insert into person values(1,'simran',emp_address('hinjewadi','pune','india'));
+
+
+insert into person values(2,'prajoti',emp_address('hinjewadi-p3','pune','india'));
+
+----------
+
+select * from person;
+
+select p.address.city from person p where pid=1;
+
+select p.address.street from person p where pid=1;
+----------
+
+update person set address=emp_address('bavdhan','pune city','india') where pid=1;
+
+
+declare
+add emp_address;
+begin
+add:=emp_address('aaa','bbb','ccc');
+update person set address =add where pid=1;
+end;
+/
+
+
+
+
+========================= member function : =========================
+
+
+drop table person;
+
+---
+create or replace type emp_address as object
+(street varchar2(20), city varchar2(20), country varchar2(20), member function getcity return varchar2);
+
+-----
+create table person(pid number, pname varchar2(20), address emp_address);
+-----
+insert into person values(1,'simran',emp_address('hinjewadi','pune','india'));
+
+
+insert into person values(2,'prajoti',emp_address('hinjewadi-p3','pune','india'));
+
+-----
+create type body emp_address as
+member function getcity return varchar2 is
+begin
+return city;
+end;
+end;
+
+
+
+select p.address.getcity() from person p where pid=1;
+
+
+
+========================== VARRAY =========================
+
+variale len array which becomes column of a table
+
+-----
+create type phone_no as varray(5) of number;
+-----
+create table emp_v (empid number,ename varchar2(20), phone phone_no);
+-----
+insert into emp_v values(1,'AAA',phone_no(1132,1123,1456));
+
+insert into emp_v values(2,'BBB',phone_no(112,123,145));
+-----
+select * from emp_v where empid=1;
+-----
+declare
+t_phone phone_no;
+begin
+select phone into t_phone from emp_v where empid=1;
+
+for x in 1..t_phone.count
+loop
+dbms_output.put_line('Phone number value '||t_phone(x));
+end loop;
+dbms_output.put_line('first phone num : '||t_phone(t_phone.first));
+dbms_output.put_line('second phone num : '||t_phone.next(t_phone.first));
+dbms_output.put_line('last phone num : '||t_phone(t_phone.last));
+end;
+/
+
+
+
+===========================
+
+varray of objects
+
+
+
+create type abc1 as object(data1 varchar2(20),data2 varchar2(20));
+
+create type phone_no1 as varray(5) of abc1;
+create table emp_v1(empid number, ename varchar2(20), phone phone_no1);
+
+insert into emp_v1 values(1,'AAA', phone_no1(abc1('aaa','bbb'),abc1('xyz','xyzxy')));
+
+insert into emp_v1 values(2,'AAAccc', phone_no1(abc1('SEaaa','secbbb'),abc1('secxyz','secxyzxy')));
+
+
+
+declare 
+t_phone phone_no1;
+cursor c1 is select * from emp_v;
+begin
+for y in c1
+loop
+select phone into t_phone from emp_v1 where empid=y.empid;
+for x in 1..t_phone.count
+loop
+dbms_output.put_line('phone no '||t_phone(x).data1||' data2 = '||t_phone(x).data2);
+end loop;
+end loop;
+end;
+/
+
+
+=================== procedure --->
+
+
+create or replace procedure forinsert(empno number,v_phone phone_no1) as
+begin
+insert into emp_v1 values(3,'zzz',v_phone);
+end;
+
+create or replace procedure forupdate(p_empno number, v_phone phone_no1) as
+begin
+update emp_v1 set phone=v_phone where empid=p_empno;
+end;
+
+
+declare
+t_phone phone_no1;
+begin
+t_phone:=phone_no1(abc1('qqq','qqqq'),abc1('www','wwww'));
+forupdate(1,t_phone);
+end;
+
+
+
+
