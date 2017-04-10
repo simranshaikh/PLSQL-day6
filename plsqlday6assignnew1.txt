@@ -1,0 +1,516 @@
+PLSQL day6 assignments:
+
+1)
+
+•	Create a user defined data type named “MARKS_TYPE” having the following subfields
+
+Column	Data type and size
+Subject	VARCHAR 2 (25)
+midTermMarks	NUMBER (3)
+annualMarks	NUMBER(3)
+
+
+•	Create an object table with name “MYMARKS” having a single column of type MARKS_TYPE.
+•	Insert any 3 records in the table with relevant data
+•	Fire an appropriate SELECT command to get midTermMarks and annualMarks for all records for the given subject
+
+
+===>
+
+create or replace type marks_type as object
+(subject varchar2(25),midtermmarks number(3),annualmarks number(3));
+---
+
+create table mymarks(marks marks_type);
+
+insert into mymarks values(marks_type('OSS',75,100));
+
+insert into mymarks values(marks_type('OLA',80,100));
+
+insert into mymarks values(marks_type('SE',90,100));
+
+select p.marks.midtermmarks from mymarks p where p.marks.subject like 'OSS';
+select p.marks.annualmarks from mymarks p where p.marks.subject like 'OSS';
+
+
+
+2)
+
+•	Create table “students” having the following design
+
+Column	Data type and size	Constraint
+studentName	VARCHAR 2 (25)	
+rollNo	NUMBER (3)	Primary Key
+Score	MARKS_TYPE	
+
+•	Insert any 3 relevant records in the table.
+•	Fire an appropriate SELECT query to get the score of a student with the given rollNO
+•	Fire an appropriate command to increase the annualMarks of the student with given rollNo by five marks
+
+
+
+create or replace type marks_type as object
+(subject varchar2(25),midtermmarks number(3),annualmarks number(3));
+-----
+
+create table students(studentname varchar2(25),rollno number(3) primary key,score marks_type);
+
+-----
+insert into students values('simran',1,marks_type('OSS',80,100));
+
+insert into students values('rehman',2,marks_type('FPL',90,99));
+
+insert into students values('alina',3,marks_type('TOC',88,95));
+
+-----
+select p.score.midtermmarks,p.score.annualmarks from students p where rollno=1;
+
+-----
+update students p set p.score.annualmarks=p.score.annualmarks+5 where rollno=1;
+
+
+---
+
+
+3)
+
+
+•	Create user defined data type named “ICECREAM_TYPE” with the following data members
+
+Column	Data type and size
+flovorNo	NUMBER(2)
+Fname	VARCHAR(10)
+Cost	NUMBER(3)
+Hastopping	CHAR(1)   
+Can be Y or N
+
+•	Create table named “menu” with the following design and insert five records into it.
+
+Column	Data type and size	Constraint
+MenuNo	NUMBER(2)	Primary key
+mainCourse	VARCHAR2(15)	Not Null
+Desert	ICECREAM_TYPE	
+Colddrink	CHAR(6)	
+
+
+•	Retrieve cost and name of an icecream from menu by specifying its flavor number.
+•	Update cost and maincourse column  from menu by specifying its MenuNo.
+
+create or replace type icecream_type as object
+(flavourno number(2), fname varchar2(10), cost number(3), hastopping char(1));
+create table menu(menuno number(2) primary key,maincourse varchar2(15) not null,desert icecream_type,colddrink char(6));
+
+insert into menu values(1,'rice',icecream_type(11,'chocolate',80,'y'),'fanta');
+
+
+insert into menu values(2,'burger',icecream_type(12,'mango',100,'y'),'slice');
+
+insert into menu values(3,'fries',icecream_type(13,'almond',150,'y'),'frooti');
+
+
+select p.desert.cost from menu p where p.desert.fname like 'mango';
+
+update menu p set p.desert.cost=200, maincourse='noodles' where menuno=1;
+
+=========================================================
+Practice 4
+
+
+Create an object type VEHICLE_TYPE to record the vehicle details owned by an employee.  VEHICLE_TYPE  has the following design :
+
+
+Vehicle_No	VARCHAR2(12)
+Vehicle_Type	CHAR(1)  
+(T for two wheeler and F for four wheeler)
+Monthly_Expense	NUMBER(7)
+
+
+•	Create a varray named VEHICLE_ARR of VEHICLE_TYPE that can store max of 3 vehicle details for each employee.
+
+•	Create a table EMP_VARRAY with the following design :
+
+Emp_No	NUMBER (4)	PRIMARY KEY
+Emp_Name	VARCHAR2 (30)	
+vehicleList	VEHICLE_ARR	
+
+•	Add two relevant records in the table with only one vehicleList member for each emp_no.
+
+•	Write a procedure named ADD_VEHICLE_DETAILS that accepts Emp_no and vehicle details and adds the vehicle details for the corresponding Emp_no in the EMP_VARRAY table. The procedure should handle all the probable errors by displaying the appropriate error messages on the screen.
+
+•	Give a call to ADD_VEHICLE_DETAILS from an anonymous PL/SQL block
+
+
+
+create or replace type vehicle_type as object(vehicle_no number(10),vehicle_type char(1),monthly_expense number(7));
+
+
+create type vehicle_arr as varray(4) of vehicle_type;
+
+create table emp_varray(emp_no number(4) primary key,emp_name varchar2(30),vehiclelist vehicle_arr);
+
+
+insert into emp_varray values(101,'simran',vehicle_arr(vehicle_type(9895,'T',3462)));
+
+insert into emp_varray values(102,'rehman',vehicle_arr(vehicle_type(1422,'F')));
+
+
+
+
+
+create or replace procedure add_details(empno number,v_arr vehicle_arr) as
+begin
+insert into emp_varray values(102,'prajoti',v_arr);
+exception
+when DUP_VAL_ON_INDEX then
+dbms_output.put_line('Invalid Employee ID !!!!');
+end;
+/
+
+declare
+t_var vehicle_arr;
+begin
+t_var:=vehicle_arr(vehicle_type(5657,'T',56478),vehicle_type(67386,'F',75789));
+add_details(102,t_var);
+end;
+/
+
+
+
+
+
+
+
+
+
+==================================================================
+
+
+
+collection 2
+
+
+A.	Create an object type CUST_TAB with below attributes
+-	Cust_id
+-	Cust_Name
+-	Plan_Name
+B.	Create suitable collection type CUST_DETAILS of CUST_TAB type.
+One customer may have many plans .
+
+C.	Create a table Cust_Tab_details as follows :
+
+Columname                            	Constraint  	Datatype
+Srno                          	Primary Key            	  Number(10)
+Cust_Info                      	 	             CUST_DETAILS
+Cust_number	 	                                Number(10)
+		                             
+D.	 Insert 2 rows in the above table 
+Atleast 2 CUST_TAB entries per srno.
+E.	Write the select query to display Sr.no and Cust_info from cust_tab_detail table
+Note : Write SQL select command not the procedure.
+				
+
+
+create or replace type cust_tab as object(cust_id number,cust_name varchar2(20),plan_name varchar2(20));
+
+-----
+
+create type cust_details as varray(5) of cust_tab;
+
+-----
+
+create table cust_tab1(srno number(10) primary key, cust_info cust_details, cust_number number(10));
+
+-----
+
+insert into cust_tab1 values(101,cust_details(cust_tab(1,'aaa','plan1'),cust_tab(2,'bbb','plan2')),111)
+
+insert into cust_tab1 values(102,cust_details(cust_tab(3,'ccc','plan3'),cust_tab(4,'ddd','plan4')),112);
+
+insert into cust_tab1 values(103,cust_details(cust_tab(5,'eee','plan5'),cust_tab(6,'fff','plan6')),111);
+
+-----
+
+declare
+var cust_details;
+cursor c1 is select * from cust_tab1;
+begin
+for y in c1
+loop
+select cust_info into var from cust_tab1 where srno=y.srno;
+for x in 1..var.count
+loop
+dbms_output.put_line('cust id : '||var(x).cust_id||' cust name : '||var(x).cust_name||' plan name : '||var(x).plan_name);
+end loop;
+end loop;
+end;
+/
+
+
+========================================================================
+
+
+Practice 5
+
+A.	create an object named paper_obj with following attributes:
+paperid
+     paperName
+     publishDate
+
+B.	Create suitable collection type paper_details of paper_obj type.
+C.	Create a table Author_Tab as follows :
+
+Columname                            	Constraint  	Datatype
+Authorid                        	Primary Key            	  Number(10)
+AuthorName                      	 	             Varchar2(20)
+Papers	 	                                paper_details
+		                             
+D.	 Insert 2 rows in the above table 
+Atleast 2 paper_obj entries per author.
+
+create or replace type paper_obj as object(paperid number(10),papername varchar2(20),publishdate date)
+
+create type paper_details as varray(5) of paper_obj;
+
+create table author_tab(authorid  number primary key,authorname varchar2(20), papers paper_details);
+
+
+insert into author_tab values(101,'simran',paper_details(paper_obj(1,'TOI','01-jan-2016'),paper_obj(2,'IE','02-feb-2017')));
+
+
+
+insert into author_tab values(102,'rehman',paper_details(paper_obj(3,'BT','10-jan-2016'),paper_obj(4,'QW','02-mar-2017')));
+
+
+
+
+=========================================================================================
+
+collecttion (5):
+
+Create an object type to maintain the history of salary hike given to employees named INCREMENT_TYPE having the following design:
+
+Incr_ID	NUMBER (3)
+Incr_Date	DATE
+Incr_Amt	NUMBER (7)
+
+
+•	Create a table named EMP_DETAIL with one of the column having the data type as SKILLS_TYPE and another one INCREMENT_TYPE. 
+
+Emp_No	NUMBER (4)
+Emp_Name	CHAR (30)
+Emp_Skills	SKILLS_TYPE
+Emp_Incr	INCREMENT_TYPE
+
+
+•	Insert few records in table EMP_DETAIL. 
+
+•	Write a procedure that will accept Emp_No as a parameter and display the data from EMP_DETAIL as follows:
+
+Employee No:   XXXXXXX		Employee Name: XXXXXXXXXX
+___________________________________________________
+Skill Set
+	
+Skill ID: XXX		Skill Name: XXXXX		Rating: XX
+___________________________________________________
+Increment
+
+Increment ID: XXXX	Increment Date: XXXXXX	 Amount: XXXXXX
+      
+         The procedure
+
+Create an object type named SKILLS_TYPE with the following subfields
+
+Skill_Id	NUMBER (2)
+Skill_Name	VARCHAR2(20)
+Skill_rating	NUMBER (2)
+ 
+Skill Rating can be between – 1 to 10.
+================
+create or replace type skills_type as object (skill_id number(2), skill_name varchar2(20), skill_rating number(2));
+-----------------------
+create or replace type increment_type as object(incr_id number(3),incr_date date,incr_amnt number(7));
+---------------------------
+create table emp_detail(emp_no number(4), emp_name varchar2(20),emp_skills skills_type, emp_incr increment_type);
+-------------------------
+insert into emp_detail values(101,'simran', skills_type(1,'SQL',4), increment_type(10,'01-mar-2017',500));
+
+insert into emp_detail values(102,'rehman', skills_type(2,'OSA',5), increment_type(11,'21-mar-2017',550));
+
+// insert into emp_detail values(102,'rehman',skills_type(4,'DBMS',9),skills_type(5,'OSA',1),skills_type(6,'C',7),increment_type(30,'11-mar-2017',500),increment_type(100,'25-may-2017',1000),increment_type(25,'10-may-1995',2600));
+-------------------------
+
+create or replace procedure display_details as
+v_empno emp_detail.emp_no%type;
+v_empname emp_detail.emp_name%type;
+v_skill_id emp_detail.emp_skills.skill_id%type;
+v_skill_name emp_detail.emp_skills.skill_name%type;
+v_inc_id emp_detail.emp_incr.incr_id%type;
+v_inc_date emp_detail.emp_incr.incr_date%type;
+v_inc_amnt emp_detail.emp_incr.incr_amnt%type;
+
+begin
+select emp_no,emp_name into v_empno,v_empname from emp_detail where emp_no=101;
+dbms_output.put_line('Employee Number :'||v_empno||'    '||'Employee Name :'||v_empname);
+dbms_output.put_line('____________________________________________________');
+dbms_output.put_line('Skill Set');
+select p.emp_skills.skill_id,p.emp_skills.skill_name into v_skill_id,v_skill_name from emp_detail p where emp_no=101;
+dbms_output.put_line('Skill ID :'||v_skill_id||'     '||' Skill Name :'||v_skill_name);
+dbms_output.put_line('____________________________________________________');
+dbms_output.put_line('Increment');
+select p.emp_incr.incr_id, p.emp_incr.incr_date,p.emp_incr.incr_amnt into v_inc_id,v_inc_date,v_inc_amnt from emp_detail p where emp_no=101;
+dbms_output.put_line('Increment Id :'||v_inc_id||'     '||'Increment Date :'||v_inc_date||'     '||' Amount :'||v_inc_amnt);
+exception
+when no_data_found then
+dbms_output.put_line('empno is invalid !!!!');
+end;
+/
+
+
+=========================================================================================================
+
+
+(4)
+
+
+create or replace type vehicle_type as object(vehicle_no number(10),vehicle_type char(1),monthly_expense number(7));
+
+
+create type vehicle_arr as varray(4) of vehicle_type;
+
+create table emp_varray(emp_no number(4) primary key,emp_name varchar2(30),vehiclelist vehicle_arr);
+
+
+insert into emp_varray values(101,'simran',vehicle_arr(vehicle_type(9895,'T',3462)));
+
+insert into emp_varray values(102,'rehman',vehicle_arr(vehicle_type(1422,'F')));
+
+
+
+
+
+create or replace procedure add_details(empno number,v_arr in out vehicle_arr) as
+var number;
+begin
+var:=v_arr.count;
+v_arr.extend(1);
+v_arr(var+1):=
+insert into emp_varray values(102,'prajoti',v_arr);
+exception
+when DUP_VAL_ON_INDEX then
+dbms_output.put_line('Invalid Employee ID !!!!');
+end;
+/
+
+declare
+t_var vehicle_arr;
+begin
+t_var:=vehicle_arr(vehicle_type(5657,'T',56478),vehicle_type(67386,'F',75789));
+add_details(102,t_var);
+end;
+/
+
+
+============================
+Practice 1
+
+Create an object type named SKILLS_TYPE with the following subfields
+
+Skill_Id	NUMBER (2)
+Skill_Name	VARCHAR2(20)
+Skill_rating	NUMBER (2)
+ 
+
+Skill Rating can be between – 1 to 10.
+
+•	Create a nested table type SKILL_TAB_TYPE of the above mentioned SKILLS_TYPE.
+
+------------->
+
+create type S_T as object(skill_id number(4),skill_name varchar2(20), skill_rating number(2));
+
+------
+
+create type S_T_T as table of S_T;
+
+------
+
+create table data(pname varchar2(20),details S_T_T)nested table details store as S_T_T1;
+
+------
+
+insert into data values('simran',S_T_T(S_T(11,'OS',8),S_T(12,'SQL',9)));
+
+
+insert into data values('rehman',S_T_T(S_T(13,'C',5),S_T(18,'CPP',3)));
+------
+ 
+===========================================================
+
+collection(3) --- nested table
+
+•	Create a nested table type SKILL_TAB_TYPE of the above mentioned SKILL_TYPE type.
+
+•	Create a table EMPMAIN with the following structure:
+
+Emp_No	NUMBER (4)	PRIMARY KEY
+Emp_Name	CHAR (30)	
+All_Skills	SKILL_TAB_TYPE	
+
+     Give appropriate names for the corresponding storage tables
+•	Insert the following record in the table EMPMAIN. 
+Example:
+Emp_No	Emp_Name	All_Skills
+1001	Aman Dev	101	Design	9
+201	Code	10
+301	Test	8
+
+
+•	Insert 2-3 more records in EMPMAIN.
+•	Update the Skill Rating for Aman for Skill 301 to 9. (Use TABLE CLAUSE).
+•	Delete all the records where Skill Name is Null.
+•	Create a procedure named ADD_SKILL that will accept Emp_No  and skill details as parameters and add the skill details to the corresponding record from the EMPMAIN table. The procedure should handle all the probable errors by displaying the appropriate error messages on the screen.
+•	Give a call to ADD_SKILL from an anonymous PL/SQL block
+
+
+create table empmain(emp_no number(4) primary key, emp_name varchar2(20), all_skills S_T_T)nested table all_skills store as S_T_T2;
+
+
+insert into empmain values(1001,'aman_dev',S_T_T(S_T(10,'design',9),S_T(20,'code',10),S_T(30,'test',8)));
+
+insert into empmain values(2001,'rahul',S_T_T(S_T(40,'dba',5),S_T(50,'osa',6),S_T(60,'sql',9)));
+
+insert into empmain values(3001,'raj',S_T_T(S_T(70,'aaa',5),S_T(80,'sss',6),S_T(90,'qqq',9)));
+
+update the (select all_skills from empmain where emp_no=1001)
+set skill_rating=9 where skill_id=30; 
+
+insert into empmain values(4001,'pooja',S_T_T(S_T(15,'null',8),S_T(16,'null',4),S_T(17,'null',9)));
+
+
+delete from the (select all_skills from empmain where emp_no=4001)
+where skill_name like 'null';
+
+
+
+create or replace procedure add_skill(v_emp empmain.emp_no%type, p_skills in out S_T_T) as
+begin
+var number;
+begin
+var:=p_skills.count;
+p_skills.extend(1);
+p_skills(var+1):=S_T(23,'ffdw',5);
+update empmain set all_skills=p_skills where v_emp=emp_no;
+dbms_output.put_line('done');
+end;
+/
+
+
+declare
+y_skill S_T_T
+
+
+ execute add_skill(4001)
+
+
+
+
